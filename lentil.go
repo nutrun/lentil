@@ -1,14 +1,14 @@
 package lentil
 
 import (
-	"net"
-	"fmt"
 	"bufio"
 	"errors"
+	"fmt"
+	"net"
 )
 
 type Beanstalkd struct {
-	conn net.Conn
+	conn   net.Conn
 	reader *bufio.Reader
 }
 
@@ -28,21 +28,35 @@ func Dial(addr string) (*Beanstalkd, error) {
 	return this, nil
 }
 
-func (this* Beanstalkd) Watch(tube string) error {
+func (this *Beanstalkd) Watch(tube string) (int, error) {
 	fmt.Fprintf(this.conn, "watch %s\r\n", tube)
 	reply, e := this.reader.ReadString('\n')
 	if e != nil {
-		return e
+		return 0, e
 	}
 	var watched int
 	_, e = fmt.Sscanf(reply, "WATCHING %d\r\n", &watched)
 	if e != nil {
-		return errors.New(reply)
+		return 0, errors.New(reply)
 	}
-	return nil
+	return watched, nil
 }
 
-func (this* Beanstalkd) Use(tube string) error {
+func (this *Beanstalkd) Ignore(tube string) (int, error) {
+	fmt.Fprintf(this.conn, "ignore %s\r\n", tube)
+	reply, e := this.reader.ReadString('\n')
+	if e != nil {
+		return 0, e
+	}
+	var watched int
+	_, e = fmt.Sscanf(reply, "WATCHING %d\r\n", &watched)
+	if e != nil {
+		return 0, errors.New(reply)
+	}
+	return watched, nil
+}
+
+func (this *Beanstalkd) Use(tube string) error {
 	fmt.Fprintf(this.conn, "use %s\r\n", tube)
 	reply, e := this.reader.ReadString('\n')
 	if e != nil {
@@ -56,7 +70,7 @@ func (this* Beanstalkd) Use(tube string) error {
 	return nil
 }
 
-func (this* Beanstalkd) Put(priority, delay, ttr int, bytes []byte) (int, error) {
+func (this *Beanstalkd) Put(priority, delay, ttr int, bytes []byte) (int, error) {
 	fmt.Fprintf(this.conn, "put %d %d %d %d\r\n%s\r\n", priority, delay, ttr, len(bytes), bytes)
 	reply, e := this.reader.ReadString('\n')
 	if e != nil {
@@ -70,8 +84,17 @@ func (this* Beanstalkd) Put(priority, delay, ttr int, bytes []byte) (int, error)
 	return id, nil
 }
 
-func (this* Beanstalkd) Reserve() (*Job, error) {
+func (this *Beanstalkd) Reserve() (*Job, error) {
 	fmt.Fprint(this.conn, "reserve\r\n")
+	return this.handleReserveReply()
+}
+
+func (this *Beanstalkd) ReserveWithTimeout(seconds int) (*Job, error) {
+	fmt.Fprintf(this.conn, "reserve-with-timeout %d\r\n", seconds)
+	return this.handleReserveReply()
+}
+
+func (this *Beanstalkd) handleReserveReply() (*Job, error) {
 	reply, e := this.reader.ReadString('\n')
 	if e != nil {
 		return nil, e
@@ -86,9 +109,22 @@ func (this* Beanstalkd) Reserve() (*Job, error) {
 	if e != nil {
 		return nil, e
 	}
-	body = body[0:len(body)-2] // throw away \r\n suffix
+	body = body[0 : len(body)-2] // throw away \r\n suffix
 	if len(body) != bodylen {
 		return nil, errors.New(fmt.Sprintf("Job body length missmatch %d/%d", len(body), bodylen))
 	}
-	return &Job{Id:id, Body:body}, nil
+	return &Job{Id: id, Body: body}, nil
+}
+
+func (this *Beanstalkd) Delete(id uint64) error {
+	fmt.Fprintf(this.conn, "delete %d\r\n", id)
+	reply, e := this.reader.ReadString('\n')
+	if e != nil {
+		return e
+	}
+	_, e = fmt.Sscanf(reply, "DELETED\r\n")
+	if e != nil {
+		return e
+	}
+	return nil
 }
