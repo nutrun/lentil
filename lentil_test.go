@@ -107,4 +107,11 @@ func TestBeanstalk(t *testing.T) {
 	if stats["buries"] != "1" {
 		t.Error("hashie")
 	}
+	stats, e = beanstalkd.StatsTube("default")
+	if e != nil {
+		t.Error(e)
+	}
+	if stats["total-jobs"] != "1" {
+		t.Error("bad tube stats")
+	}
 }

@@ -227,22 +227,35 @@ func (this *Beanstalkd) Kick(bound int) (int, error) {
 
 func (this *Beanstalkd) StatsJob(id uint64) (map[string]string, error) {
 	fmt.Fprintf(this.conn, "stats-job %d\r\n", id)
-	var statslen int
-	_, e := fmt.Fscanf(this.conn, "OK %d\r\n", &statslen)
+	return this.handleMapResponse()
+}
+
+func (this *Beanstalkd) StatsTube(tube string) (map[string]string, error) {
+	fmt.Fprintf(this.conn, "stats-tube %s\r\n", tube)
+	return this.handleMapResponse()
+}
+
+func (this *Beanstalkd) handleMapResponse() (map[string]string, error) {
+	reply, e := this.reader.ReadString('\n')
 	if e != nil {
 		return nil, e
 	}
-	stats := make([]byte, statslen)
-	_, e = this.conn.Read(stats)
-	if e != nil{
+	var datalen int
+	_, e = fmt.Sscanf(reply, "OK %d\r\n", &datalen)
+	if e != nil {
+		return nil, errors.New(reply)
+	}
+	data := make([]byte, datalen+2) // Add 2 for the trailing \r\n
+	_, e = this.reader.Read(data)
+	if e != nil {
 		return nil, e
 	}
-	statmap := make(map[string]string)
-	for _, line := range strings.Split(string(stats), "\n") {
+	dict := make(map[string]string)
+	for _, line := range strings.Split(string(data), "\n") {
 		if strings.Index(line, ":") != -1 {
 			keyvalue := strings.Split(line, ":")
-			statmap[keyvalue[0]] = strings.TrimSpace(keyvalue[1])
+			dict[keyvalue[0]] = strings.TrimSpace(keyvalue[1])
 		}
 	}
-	return statmap, nil
+	return dict, nil
 }
