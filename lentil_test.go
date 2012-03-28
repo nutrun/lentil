@@ -63,4 +63,48 @@ func TestBeanstalk(t *testing.T) {
 	if e == nil {
 		t.Error("Y U NO ERROR?")
 	}
+	beanstalkd.Use("default")
+	beanstalkd.Put(0, 0, 60, []byte("job 2"))
+	job, _ = beanstalkd.Reserve()
+	e = beanstalkd.Release(job.Id, 0, 0)
+	if e != nil {
+		t.Error(e)
+	}
+	job, _ = beanstalkd.Reserve()
+	e = beanstalkd.Touch(job.Id)
+	if e != nil {
+		t.Error(e)
+	}
+	e = beanstalkd.Bury(job.Id, 0)
+	if e != nil {
+		t.Error(e)
+	}
+	job, e = beanstalkd.PeekBuried()
+	if e != nil {
+		t.Error(e)
+	}
+	if string(job.Body) != "job 2" {
+		t.Error("Peeked wrong job")
+	}
+	count, e := beanstalkd.Kick(1)
+	if e != nil {
+		t.Error(e)
+	}
+	if count != 1 {
+		t.Error("Y U NO KIK?")
+	}
+	job, e = beanstalkd.Peek(job.Id)
+	if e != nil {
+		t.Error(e)
+	}
+	if string(job.Body) != "job 2" {
+		t.Error("Peeked wrong job")
+	}
+  	stats, e := beanstalkd.StatsJob(job.Id)
+	if e != nil {
+		t.Error(e)
+	}
+	if stats["buries"] != "1" {
+		t.Error("hashie")
+	}
 }

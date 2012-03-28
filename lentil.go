@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strings"
 )
 
 type Beanstalkd struct {
@@ -70,8 +71,8 @@ func (this *Beanstalkd) Use(tube string) error {
 	return nil
 }
 
-func (this *Beanstalkd) Put(priority, delay, ttr int, bytes []byte) (int, error) {
-	fmt.Fprintf(this.conn, "put %d %d %d %d\r\n%s\r\n", priority, delay, ttr, len(bytes), bytes)
+func (this *Beanstalkd) Put(priority, delay, ttr int, data []byte) (int, error) {
+	fmt.Fprintf(this.conn, "put %d %d %d %d\r\n%s\r\n", priority, delay, ttr, len(data), data)
 	reply, e := this.reader.ReadString('\n')
 	if e != nil {
 		return -1, e
@@ -124,7 +125,124 @@ func (this *Beanstalkd) Delete(id uint64) error {
 	}
 	_, e = fmt.Sscanf(reply, "DELETED\r\n")
 	if e != nil {
-		return e
+		return errors.New(reply)
 	}
 	return nil
+}
+
+func (this *Beanstalkd) Release(id uint64, pri, delay int) error {
+	fmt.Fprintf(this.conn, "release %d %d %d\r\n", id, pri, delay)
+	reply, e := this.reader.ReadString('\n')
+	if e != nil {
+		return e
+	}
+	_, e = fmt.Sscanf(reply, "RELEASED\r\n")
+	if e != nil {
+		return errors.New(reply)
+	}
+	return nil
+}
+
+func (this *Beanstalkd) Bury(id uint64, pri int) error {
+	fmt.Fprintf(this.conn, "bury %d %d\r\n", id, pri)
+	reply, e := this.reader.ReadString('\n')
+	if e != nil {
+		return e
+	}
+	_, e = fmt.Sscanf(reply, "BURIED\r\n")
+	if e != nil {
+		return errors.New(reply)
+	}
+	return nil
+}
+
+func (this *Beanstalkd) Touch(id uint64) error {
+	fmt.Fprintf(this.conn, "touch %d\r\n", id)
+	reply, e := this.reader.ReadString('\n')
+	if e != nil {
+		return e
+	}
+	_, e = fmt.Sscanf(reply, "TOUCHED\r\n")
+	if e != nil {
+		return errors.New(reply)
+	}
+	return nil
+}
+
+func (this *Beanstalkd) Peek(id uint64) (*Job, error) {
+	fmt.Fprintf(this.conn, "peek %d\r\n", id)
+	return this.handlePeekReply()
+}
+
+func (this *Beanstalkd) PeekReady() (*Job, error) {
+	fmt.Fprintf(this.conn, "peek-ready\r\n")
+	return this.handlePeekReply()
+}
+
+func (this *Beanstalkd) PeekDelayed() (*Job, error) {
+	fmt.Fprintf(this.conn, "peek-delayed\r\n")
+	return this.handlePeekReply()
+}
+
+func (this *Beanstalkd) PeekBuried() (*Job, error) {
+	fmt.Fprintf(this.conn, "peek-buried\r\n")
+	return this.handlePeekReply()
+}
+
+func (this *Beanstalkd) handlePeekReply() (*Job, error) {
+	reply, e := this.reader.ReadString('\n')
+	if e != nil {
+		return nil, e
+	}
+	var id uint64
+	var bodylen int
+	_, e = fmt.Sscanf(reply, "FOUND %d %d\r\n", &id, &bodylen)
+	if e != nil {
+		return nil, errors.New(reply)
+	}
+	body, e := this.reader.ReadSlice('\n')
+	if e != nil {
+		return nil, e
+	}
+	body = body[0 : len(body)-2] // throw away \r\n suffix
+	if len(body) != bodylen {
+		return nil, errors.New(fmt.Sprintf("Job body length missmatch %d/%d", len(body), bodylen))
+	}
+	return &Job{Id: id, Body: body}, nil
+}
+
+func (this *Beanstalkd) Kick(bound int) (int, error) {
+	fmt.Fprintf(this.conn, "kick %d\r\n", bound)
+	reply, e := this.reader.ReadString('\n')
+	if e != nil {
+		return -1, e
+	}
+	var count int
+	_, e = fmt.Sscanf(reply, "KICKED %d\r\n", &count)
+	if e != nil {
+		return -1, errors.New(reply)
+	}
+	return count, nil
+}
+
+func (this *Beanstalkd) StatsJob(id uint64) (map[string]string, error) {
+	fmt.Fprintf(this.conn, "stats-job %d\r\n", id)
+	var statslen int
+	_, e := fmt.Fscanf(this.conn, "OK %d\r\n", &statslen)
+	if e != nil {
+		return nil, e
+	}
+	stats := make([]byte, statslen)
+	_, e = this.conn.Read(stats)
+	if e != nil{
+		return nil, e
+	}
+	statmap := make(map[string]string)
+	for _, line := range strings.Split(string(stats), "\n") {
+		if strings.Index(line, ":") != -1 {
+			keyvalue := strings.Split(line, ":")
+			statmap[keyvalue[0]] = strings.TrimSpace(keyvalue[1])
+		}
+	}
+	return statmap, nil
 }
