@@ -114,4 +114,9 @@ func TestBeanstalk(t *testing.T) {
 	if stats["total-jobs"] != "1" {
 		t.Error("bad tube stats")
 	}
+	stats, e = beanstalkd.Stats()
+	if e != nil {
+		t.Error()
+	}
+	fmt.Printf("%v", stats)
 }

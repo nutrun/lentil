@@ -235,6 +235,11 @@ func (this *Beanstalkd) StatsTube(tube string) (map[string]string, error) {
 	return this.handleMapResponse()
 }
 
+func (this *Beanstalkd) Stats() (map[string]string, error) {
+	fmt.Fprintf(this.conn, "stats\r\n")
+	return this.handleMapResponse()
+}
+
 func (this *Beanstalkd) handleMapResponse() (map[string]string, error) {
 	reply, e := this.reader.ReadString('\n')
 	if e != nil {
