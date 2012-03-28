@@ -1,1 +1,5 @@
 lentil - golang beanstalkd client library
+
+beanstalkd: http://kr.github.com/beanstalkd/
+beanstalkd source: https://github.com/kr/beanstalkd/
+beanstalkd protocol: https://github.com/kr/beanstalkd/blob/master/doc/protocol.txt
