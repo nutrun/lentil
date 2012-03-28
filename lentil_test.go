@@ -15,6 +15,29 @@ func TestBeanstalk(t *testing.T) {
 	if beanstalkd == nil || e != nil {
 		t.Fatal("Should have connected without errors. Is beanstalkd running on 0.0.0.0:11300?")
 	}
+	// cleanup beanstalkd
+	for {
+		tubes, e := beanstalkd.ListTubes()
+		if e != nil {
+			t.Fatal(e)
+		}
+		for _, tube := range tubes {
+			beanstalkd.Watch(tube)
+		}
+		job, e := beanstalkd.ReserveWithTimeout(0)
+		if e != nil {
+			for _, tube := range tubes {
+				if tube != "default" {
+					_, e := beanstalkd.Ignore(tube)
+					if e != nil {
+						t.Fatal(e)
+					}
+				}
+			}
+			break
+		}
+		beanstalkd.Delete(job.Id)
+	}
 	e = beanstalkd.Use("rock")
 	if e != nil {
 		t.Error(e)
@@ -104,19 +127,54 @@ func TestBeanstalk(t *testing.T) {
 	if e != nil {
 		t.Error(e)
 	}
-	if stats["buries"] != "1" {
-		t.Error("hashie")
+	if len(stats) != 13 {
+		t.Error("bad job stats")
 	}
 	stats, e = beanstalkd.StatsTube("default")
 	if e != nil {
 		t.Error(e)
 	}
-	if stats["total-jobs"] != "1" {
+	if len(stats) != 13 {
 		t.Error("bad tube stats")
+
 	}
 	stats, e = beanstalkd.Stats()
 	if e != nil {
 		t.Error()
 	}
-	fmt.Printf("%v", stats)
+	if len(stats) != 44 {
+		t.Error("bad stats")
+	}
+	tubes, e := beanstalkd.ListTubes()
+	if e != nil {
+		t.Error(e)
+	}
+	if len(tubes) != 1 {
+		t.Error(len(tubes))
+	}
+	if tubes[0] != "default" {
+		t.Error("Y U NO HAVE RITE TUB?")
+	}
+	tube, e := beanstalkd.ListTubeUsed()
+	if e != nil {
+		t.Error(e)
+	}
+	if tube != "default" {
+		t.Error("Watching wrong tube")
+	}
+	tubes, e = beanstalkd.ListTubesWatched()
+	if e != nil {
+		t.Error(e)
+	}
+	if len(tubes) != 1 {
+		t.Error(len(tubes))
+	}
+	if tubes[0] != "default" {
+		t.Error("Y U NO HAVE RITE TUB?")
+	}
+	e = beanstalkd.PauseTube("default", 1)
+	if e != nil {
+		t.Error(e)
+	}
+	beanstalkd.Quit()
 }

@@ -264,3 +264,65 @@ func (this *Beanstalkd) handleMapResponse() (map[string]string, error) {
 	}
 	return dict, nil
 }
+
+func (this *Beanstalkd) ListTubes() ([]string, error) {
+	fmt.Fprintf(this.conn, "list-tubes\r\n")
+	return this.handleListResponse()
+}
+
+func (this *Beanstalkd) handleListResponse() ([]string, error) {
+	reply, e := this.reader.ReadString('\n')
+	if e != nil {
+		return nil, e
+	}
+	var datalen int
+	_, e = fmt.Sscanf(reply, "OK %d\r\n", &datalen)
+	if e != nil {
+		return nil, errors.New(reply)
+	}
+	data := make([]byte, datalen+2) // Add 2 for the trailing \r\n
+	_, e = this.reader.Read(data)
+	if e != nil {
+		return nil, e
+	}
+	lines := strings.Split(string(data), "\n")
+	tubes := make([]string, 0)
+	for _, line := range lines[1:len(lines)-2] {
+		tube := strings.TrimSpace(line)
+		tube = strings.TrimLeft(tube, "- ")
+		tubes = append(tubes, tube)
+	}
+	return tubes, nil
+}
+
+func (this *Beanstalkd) ListTubeUsed() (string, error) {
+	fmt.Fprintf(this.conn, "list-tube-used\r\n")
+	var tube string
+	_, e := fmt.Fscanf(this.conn, "USING %s\r\n", &tube)
+	if e != nil {
+		return "", e
+	}
+	return tube, nil
+}
+
+func (this *Beanstalkd) ListTubesWatched() ([]string, error) {
+	fmt.Fprint(this.conn, "list-tubes-watched\r\n")
+	return this.handleListResponse()
+}
+
+func (this *Beanstalkd) Quit() {
+	fmt.Fprint(this.conn, "list-tubes-watched\r\n")
+}
+
+func (this *Beanstalkd) PauseTube(tube string, delay int) error {
+	fmt.Fprintf(this.conn, "pause-tube %s %d\r\n", tube, delay)
+	reply, e := this.reader.ReadString('\n')
+	if e != nil {
+		return e
+	}
+	_, e = fmt.Sscanf(reply, "PAUSED\r\n")
+	if e != nil {
+		return errors.New(reply)
+	}
+	return nil
+}
