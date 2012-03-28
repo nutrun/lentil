@@ -18,6 +18,7 @@ type Job struct {
 	Body []byte
 }
 
+// Dial opens a connection to beanstalkd. The format of addr is 'host:port', e.g '0.0.0.0:11300'.
 func Dial(addr string) (*Beanstalkd, error) {
 	this := new(Beanstalkd)
 	var e error
@@ -29,6 +30,7 @@ func Dial(addr string) (*Beanstalkd, error) {
 	return this, nil
 }
 
+// Watch adds the named tube to a consumer's watch list for the current connection.
 func (this *Beanstalkd) Watch(tube string) (int, error) {
 	fmt.Fprintf(this.conn, "watch %s\r\n", tube)
 	reply, e := this.reader.ReadString('\n')
@@ -43,6 +45,7 @@ func (this *Beanstalkd) Watch(tube string) (int, error) {
 	return watched, nil
 }
 
+// Ignore removes the named tube from a consumer's watch list for the current connection
 func (this *Beanstalkd) Ignore(tube string) (int, error) {
 	fmt.Fprintf(this.conn, "ignore %s\r\n", tube)
 	reply, e := this.reader.ReadString('\n')
@@ -57,6 +60,7 @@ func (this *Beanstalkd) Ignore(tube string) (int, error) {
 	return watched, nil
 }
 
+// Use is for producers. Subsequent Put commands will put jobs into the tube specified by this command. If no use command has been issued, jobs will be put into the tube named "default"
 func (this *Beanstalkd) Use(tube string) error {
 	fmt.Fprintf(this.conn, "use %s\r\n", tube)
 	reply, e := this.reader.ReadString('\n')
@@ -71,6 +75,7 @@ func (this *Beanstalkd) Use(tube string) error {
 	return nil
 }
 
+// Put inserts a job into the queue.
 func (this *Beanstalkd) Put(priority, delay, ttr int, data []byte) (int, error) {
 	fmt.Fprintf(this.conn, "put %d %d %d %d\r\n%s\r\n", priority, delay, ttr, len(data), data)
 	reply, e := this.reader.ReadString('\n')
@@ -85,11 +90,15 @@ func (this *Beanstalkd) Put(priority, delay, ttr int, data []byte) (int, error) 
 	return id, nil
 }
 
+// Reserve is for processes that want to consume jobs from the queue.
 func (this *Beanstalkd) Reserve() (*Job, error) {
 	fmt.Fprint(this.conn, "reserve\r\n")
 	return this.handleReserveReply()
 }
 
+// ReserveWithTimeout is for processes that want to consume jobs from the queue.
+// A timeout value of 0 will cause the server to immediately return either a response or TIMED_OUT.
+// A positive value of timeout will limit the amount of time the client will block on the reserve request until a job becomes available.
 func (this *Beanstalkd) ReserveWithTimeout(seconds int) (*Job, error) {
 	fmt.Fprintf(this.conn, "reserve-with-timeout %d\r\n", seconds)
 	return this.handleReserveReply()
@@ -117,6 +126,8 @@ func (this *Beanstalkd) handleReserveReply() (*Job, error) {
 	return &Job{Id: id, Body: body}, nil
 }
 
+// Delete  removes a job from the server entirely.
+// It is normally used by the client when the job has successfully run to completion.
 func (this *Beanstalkd) Delete(id uint64) error {
 	fmt.Fprintf(this.conn, "delete %d\r\n", id)
 	reply, e := this.reader.ReadString('\n')
@@ -130,6 +141,7 @@ func (this *Beanstalkd) Delete(id uint64) error {
 	return nil
 }
 
+// Release puts a reserved job back into the ready queue.
 func (this *Beanstalkd) Release(id uint64, pri, delay int) error {
 	fmt.Fprintf(this.conn, "release %d %d %d\r\n", id, pri, delay)
 	reply, e := this.reader.ReadString('\n')
@@ -143,6 +155,7 @@ func (this *Beanstalkd) Release(id uint64, pri, delay int) error {
 	return nil
 }
 
+// Bury puts a job into the "buried" state.
 func (this *Beanstalkd) Bury(id uint64, pri int) error {
 	fmt.Fprintf(this.conn, "bury %d %d\r\n", id, pri)
 	reply, e := this.reader.ReadString('\n')
@@ -156,6 +169,7 @@ func (this *Beanstalkd) Bury(id uint64, pri int) error {
 	return nil
 }
 
+// Touch allows a worker to request more time to work on a job.
 func (this *Beanstalkd) Touch(id uint64) error {
 	fmt.Fprintf(this.conn, "touch %d\r\n", id)
 	reply, e := this.reader.ReadString('\n')
@@ -169,6 +183,7 @@ func (this *Beanstalkd) Touch(id uint64) error {
 	return nil
 }
 
+// Peek lets the client inspect a job in the system
 func (this *Beanstalkd) Peek(id uint64) (*Job, error) {
 	fmt.Fprintf(this.conn, "peek %d\r\n", id)
 	return this.handlePeekReply()
