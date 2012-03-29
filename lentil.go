@@ -60,7 +60,9 @@ func (this *Beanstalkd) Ignore(tube string) (int, error) {
 	return watched, nil
 }
 
-// Use is for producers. Subsequent Put commands will put jobs into the tube specified by this command. If no use command has been issued, jobs will be put into the tube named "default"
+// Use is for producers. 
+// Subsequent Put commands will put jobs into the tube specified by this command.
+// If no use command has been issued, jobs will be put into the tube named "default".
 func (this *Beanstalkd) Use(tube string) error {
 	fmt.Fprintf(this.conn, "use %s\r\n", tube)
 	reply, e := this.reader.ReadString('\n')
@@ -98,7 +100,7 @@ func (this *Beanstalkd) Reserve() (*Job, error) {
 
 // ReserveWithTimeout is for processes that want to consume jobs from the queue.
 // A timeout value of 0 will cause the server to immediately return either a response or TIMED_OUT.
-// A positive value of timeout will limit the amount of time the client will block on the reserve request until a job becomes available.
+// A positive timeout value will limit the amount of time the client will block on the reserve request.
 func (this *Beanstalkd) ReserveWithTimeout(seconds int) (*Job, error) {
 	fmt.Fprintf(this.conn, "reserve-with-timeout %d\r\n", seconds)
 	return this.handleReserveReply()
@@ -183,22 +185,25 @@ func (this *Beanstalkd) Touch(id uint64) error {
 	return nil
 }
 
-// Peek lets the client inspect a job in the system
+// Peek lets the client inspect a job in the system.
 func (this *Beanstalkd) Peek(id uint64) (*Job, error) {
 	fmt.Fprintf(this.conn, "peek %d\r\n", id)
 	return this.handlePeekReply()
 }
 
+// PeekReady lets the client inspect the first "ready" job.
 func (this *Beanstalkd) PeekReady() (*Job, error) {
 	fmt.Fprintf(this.conn, "peek-ready\r\n")
 	return this.handlePeekReply()
 }
 
+// PeekDelayed lets the client inspect the first "delayed" job.
 func (this *Beanstalkd) PeekDelayed() (*Job, error) {
 	fmt.Fprintf(this.conn, "peek-delayed\r\n")
 	return this.handlePeekReply()
 }
 
+// PeekDelayed lets the client inspect the first "buried" job.
 func (this *Beanstalkd) PeekBuried() (*Job, error) {
 	fmt.Fprintf(this.conn, "peek-buried\r\n")
 	return this.handlePeekReply()
@@ -226,6 +231,7 @@ func (this *Beanstalkd) handlePeekReply() (*Job, error) {
 	return &Job{Id: id, Body: body}, nil
 }
 
+// Kick moves a job to the "ready" queue.
 func (this *Beanstalkd) Kick(bound int) (int, error) {
 	fmt.Fprintf(this.conn, "kick %d\r\n", bound)
 	reply, e := this.reader.ReadString('\n')
@@ -240,16 +246,19 @@ func (this *Beanstalkd) Kick(bound int) (int, error) {
 	return count, nil
 }
 
+// StatsJob returns statistical information about a job.
 func (this *Beanstalkd) StatsJob(id uint64) (map[string]string, error) {
 	fmt.Fprintf(this.conn, "stats-job %d\r\n", id)
 	return this.handleMapResponse()
 }
 
+// StatsTube returns statistical information about a tube.
 func (this *Beanstalkd) StatsTube(tube string) (map[string]string, error) {
 	fmt.Fprintf(this.conn, "stats-tube %s\r\n", tube)
 	return this.handleMapResponse()
 }
 
+// Stats returns statistical information about the queue.
 func (this *Beanstalkd) Stats() (map[string]string, error) {
 	fmt.Fprintf(this.conn, "stats\r\n")
 	return this.handleMapResponse()
@@ -280,6 +289,7 @@ func (this *Beanstalkd) handleMapResponse() (map[string]string, error) {
 	return dict, nil
 }
 
+// ListTubes returns a list of all the existing tubes.
 func (this *Beanstalkd) ListTubes() ([]string, error) {
 	fmt.Fprintf(this.conn, "list-tubes\r\n")
 	return this.handleListResponse()
@@ -310,6 +320,7 @@ func (this *Beanstalkd) handleListResponse() ([]string, error) {
 	return tubes, nil
 }
 
+// ListTubeUsed returns the tube currently used by a producer.
 func (this *Beanstalkd) ListTubeUsed() (string, error) {
 	fmt.Fprintf(this.conn, "list-tube-used\r\n")
 	var tube string
@@ -320,15 +331,18 @@ func (this *Beanstalkd) ListTubeUsed() (string, error) {
 	return tube, nil
 }
 
+// ListTubesWatched returns the list of tubes watched by a consumer.
 func (this *Beanstalkd) ListTubesWatched() ([]string, error) {
 	fmt.Fprint(this.conn, "list-tubes-watched\r\n")
 	return this.handleListResponse()
 }
 
+// Quit closes the connection to the queue.
 func (this *Beanstalkd) Quit() {
 	fmt.Fprint(this.conn, "list-tubes-watched\r\n")
 }
 
+// PauseTube delays any new job being reserved for a given time.
 func (this *Beanstalkd) PauseTube(tube string, delay int) error {
 	fmt.Fprintf(this.conn, "pause-tube %s %d\r\n", tube, delay)
 	reply, e := this.reader.ReadString('\n')
