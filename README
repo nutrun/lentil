@@ -1,5 +1,13 @@
 lentil - golang beanstalkd client library
 
+INSTALL
+
+`go get github.com/nutrun/lentil'
+
+or, in $GOPATH/src:
+
+`git clone git://github.com/nutrun/lentil.git && cd lentil && go install'
+
 beanstalkd: http://kr.github.com/beanstalkd/
 beanstalkd source: https://github.com/kr/beanstalkd/
 beanstalkd protocol: https://github.com/kr/beanstalkd/blob/master/doc/protocol.txt
