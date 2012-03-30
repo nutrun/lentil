@@ -12,7 +12,7 @@ Or, in $GOPATH/src:
 git clone git://github.com/nutrun/lentil.git && cd lentil && go install
 ```
 
-Use godoc to view documentation. For example:
+After installing, use godoc to view documentation. For example:
 
 ```bash
 godoc -http=:6060
