@@ -1,3 +1,4 @@
+// beanstalkd ( http://kr.github.com/beanstalkd/ ) client library that implements the beanstalkd protocol ( https://github.com/kr/beanstalkd/blob/master/doc/protocol.txt )
 package lentil
 
 import (
