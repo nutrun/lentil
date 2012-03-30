@@ -63,8 +63,8 @@ func main() {
 
 ## LINKS
 
-beanstalkd: http://kr.github.com/beanstalkd/
-beanstalkd source: https://github.com/kr/beanstalkd/
-beanstalkd protocol: https://github.com/kr/beanstalkd/blob/master/doc/protocol.txt
-kr's beanstalk.go: https://github.com/kr/beanstalk.go
+* beanstalkd: http://kr.github.com/beanstalkd/
+* beanstalkd source: https://github.com/kr/beanstalkd/
+* beanstalkd protocol: https://github.com/kr/beanstalkd/blob/master/doc/protocol.txt
+* kr's beanstalk.go: https://github.com/kr/beanstalk.go
 
