@@ -1,6 +1,6 @@
-lentil - golang beanstalkd client library
+# lentil - golang beanstalkd client library
 
-INSTALL
+## INSTALL
 
 `go get github.com/nutrun/lentil'
 
@@ -8,10 +8,11 @@ or, in $GOPATH/src:
 
 `git clone git://github.com/nutrun/lentil.git && cd lentil && go install'
 
-USAGE
+## USAGE
 
 Example producer:
 
+```go
 package main
 
 import(
@@ -27,9 +28,11 @@ func main() {
 	jobId, e := conn.Put(0, 0, 60, []byte("hello"))
 	log.Printf("JOB ID: %d\n", jobId)
 }
+```
 
 Example consumer:
 
+```go
 package main
 
 import(
@@ -52,8 +55,9 @@ func main() {
 		log.Fatal(e)
 	}
 }
+```
 
-LINKS
+## LINKS
 
 beanstalkd: http://kr.github.com/beanstalkd/
 beanstalkd source: https://github.com/kr/beanstalkd/
