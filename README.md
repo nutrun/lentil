@@ -6,7 +6,7 @@
 go get github.com/nutrun/lentil
 ```
 
-or, in $GOPATH/src:
+Or, in $GOPATH/src:
 
 ```bash
 git clone git://github.com/nutrun/lentil.git && cd lentil && go install
@@ -30,6 +30,9 @@ func main() {
 		log.Fatal(e)
 	}
 	jobId, e := conn.Put(0, 0, 60, []byte("hello"))
+	if e != nil {
+		log.Fatal(e)
+	}
 	log.Printf("JOB ID: %d\n", jobId)
 }
 ```
