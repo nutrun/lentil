@@ -2,15 +2,19 @@
 
 ## INSTALL
 
-`go get github.com/nutrun/lentil'
+```bash
+go get github.com/nutrun/lentil
+```
 
 or, in $GOPATH/src:
 
-`git clone git://github.com/nutrun/lentil.git && cd lentil && go install'
+```bash
+git clone git://github.com/nutrun/lentil.git && cd lentil && go install
+```
 
 ## USAGE
 
-Example producer:
+### Example producer:
 
 ```go
 package main
@@ -30,7 +34,7 @@ func main() {
 }
 ```
 
-Example consumer:
+### Example consumer:
 
 ```go
 package main
