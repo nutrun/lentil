@@ -312,7 +312,7 @@ func (this *Beanstalkd) handleListResponse() ([]string, error) {
 	}
 	lines := strings.Split(string(data), "\n")
 	tubes := make([]string, 0)
-	for _, line := range lines[1:len(lines)-2] {
+	for _, line := range lines[1 : len(lines)-2] {
 		tube := strings.TrimSpace(line)
 		tube = strings.TrimLeft(tube, "- ")
 		tubes = append(tubes, tube)
