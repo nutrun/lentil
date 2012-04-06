@@ -6,8 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"strings"
-    "os"
 )
 
 type Beanstalkd struct {
@@ -24,12 +24,12 @@ var Debug *os.File = nil
 
 func (this *Beanstalkd) send(format string, args ...interface{}) error {
 
-    if Debug != nil {
-        fmt.Fprintf(Debug, "(%v) -> ", this.conn)
-        fmt.Fprintf(Debug, format, args...)
-    }
-    fmt.Fprintf(this.conn, format, args...)
-    return nil
+	if Debug != nil {
+		fmt.Fprintf(Debug, "(%v) -> ", this.conn)
+		fmt.Fprintf(Debug, format, args...)
+	}
+	fmt.Fprintf(this.conn, format, args...)
+	return nil
 }
 
 func (this *Beanstalkd) recvline() (string, error) {
@@ -37,10 +37,10 @@ func (this *Beanstalkd) recvline() (string, error) {
 	if e != nil {
 		return reply, e
 	}
-    if Debug != nil {
-        fmt.Fprintf(Debug, "(%v) <- %v\n", this.conn, string(reply))
-    }
-    return reply, e
+	if Debug != nil {
+		fmt.Fprintf(Debug, "(%v) <- %v\n", this.conn, string(reply))
+	}
+	return reply, e
 }
 
 func (this *Beanstalkd) recvslice() ([]byte, error) {
@@ -48,24 +48,23 @@ func (this *Beanstalkd) recvslice() ([]byte, error) {
 	if e != nil {
 		return reply, e
 	}
-    if Debug != nil {
-        fmt.Fprintf(Debug, "(%v) <- %v\n", this.conn, string(reply))
-    }
-    return reply, e
+	if Debug != nil {
+		fmt.Fprintf(Debug, "(%v) <- %v\n", this.conn, string(reply))
+	}
+	return reply, e
 }
 
 func (this *Beanstalkd) recvdata(data []byte) (int, error) {
-    c, e := this.reader.Read(data)
-    if e != nil {
-        return c, e
-    }
-    if Debug != nil {
-        fmt.Fprintf(Debug, "(%v) <- %v\n", this.conn, string(data))
-    }
-    return c, e
+	c, e := this.reader.Read(data)
+	if e != nil {
+		return c, e
+	}
+	if Debug != nil {
+		fmt.Fprintf(Debug, "(%v) <- %v\n", this.conn, string(data))
+	}
+	return c, e
 }
-    
-    
+
 // Dial opens a connection to beanstalkd. The format of addr is 'host:port', e.g '0.0.0.0:11300'.
 func Dial(addr string) (*Beanstalkd, error) {
 	this := new(Beanstalkd)
@@ -80,8 +79,8 @@ func Dial(addr string) (*Beanstalkd, error) {
 
 // Watch adds the named tube to a consumer's watch list for the current connection.
 func (this *Beanstalkd) Watch(tube string) (int, error) {
-    this.send("watch %s\r\n", tube)
-    reply, e := this.recvline()
+	this.send("watch %s\r\n", tube)
+	reply, e := this.recvline()
 	if e != nil {
 		return 0, e
 	}
@@ -95,7 +94,7 @@ func (this *Beanstalkd) Watch(tube string) (int, error) {
 
 // Ignore removes the named tube from a consumer's watch list for the current connection
 func (this *Beanstalkd) Ignore(tube string) (int, error) {
-    this.send("ignore %s\r\n", tube)
+	this.send("ignore %s\r\n", tube)
 	reply, e := this.recvline()
 	if e != nil {
 		return 0, e
@@ -179,7 +178,7 @@ func (this *Beanstalkd) handleReserveReply() (*Job, error) {
 // Delete  removes a job from the server entirely.
 // It is normally used by the client when the job has successfully run to completion.
 func (this *Beanstalkd) Delete(id uint64) error {
-    this.send("delete %d\r\n", id)
+	this.send("delete %d\r\n", id)
 	reply, e := this.recvline()
 	if e != nil {
 		return e
@@ -207,7 +206,7 @@ func (this *Beanstalkd) Release(id uint64, pri, delay int) error {
 
 // Bury puts a job into the "buried" state.
 func (this *Beanstalkd) Bury(id uint64, pri int) error {
-    this.send("bury %d %d\r\n", id, pri)
+	this.send("bury %d %d\r\n", id, pri)
 	reply, e := this.recvline()
 	if e != nil {
 		return e
@@ -313,7 +312,7 @@ func (this *Beanstalkd) Stats() (map[string]string, error) {
 }
 
 func (this *Beanstalkd) handleMapResponse() (map[string]string, error) {
-	reply, e := this.recvline() 
+	reply, e := this.recvline()
 	if e != nil {
 		return nil, e
 	}
@@ -372,7 +371,7 @@ func (this *Beanstalkd) handleListResponse() ([]string, error) {
 func (this *Beanstalkd) ListTubeUsed() (string, error) {
 	this.send("list-tube-used\r\n")
 	var tube string
-	reply, e := this.recvline() 
+	reply, e := this.recvline()
 	if e != nil {
 		return "", e
 	}
@@ -392,7 +391,7 @@ func (this *Beanstalkd) ListTubesWatched() ([]string, error) {
 // Quit closes the connection to the queue.
 func (this *Beanstalkd) Quit() error {
 	this.send("quit\r\n")
-    return this.conn.Close()
+	return this.conn.Close()
 }
 
 // PauseTube delays any new job being reserved for a given time.
