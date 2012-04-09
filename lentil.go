@@ -125,16 +125,16 @@ func (this *Beanstalkd) Use(tube string) error {
 }
 
 // Put inserts a job into the queue.
-func (this *Beanstalkd) Put(priority, delay, ttr int, data []byte) (int, error) {
+func (this *Beanstalkd) Put(priority, delay, ttr int, data []byte) (uint64, error) {
 	this.send("put %d %d %d %d\r\n%s\r\n", priority, delay, ttr, len(data), data)
 	reply, e := this.recvline()
 	if e != nil {
-		return -1, e
+		return 0, e
 	}
-	var id int
+	var id uint64
 	_, e = fmt.Sscanf(reply, "INSERTED %d\r\n", &id)
 	if e != nil {
-		return -1, errors.New(reply)
+		return 0, errors.New(reply)
 	}
 	return id, nil
 }

@@ -44,7 +44,7 @@ func TestBeanstalk(t *testing.T) {
 		t.Error(e)
 	}
 	id, e := beanstalkd.Put(0, 0, 60, []byte("y u no is job?"))
-	if e != nil || id == -1 {
+	if e != nil || id == 0 {
 		t.Error(e)
 	}
 	watching, e := beanstalkd.Watch("rock")
