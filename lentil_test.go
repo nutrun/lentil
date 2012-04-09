@@ -2,6 +2,7 @@ package lentil
 
 import (
 	"fmt"
+	"log"
 	"testing"
 )
 
@@ -123,7 +124,7 @@ func TestBeanstalk(t *testing.T) {
 	if string(job.Body) != "job 2" {
 		t.Error("Peeked wrong job")
 	}
-  	stats, e := beanstalkd.StatsJob(job.Id)
+	stats, e := beanstalkd.StatsJob(job.Id)
 	if e != nil {
 		t.Error(e)
 	}
@@ -177,4 +178,28 @@ func TestBeanstalk(t *testing.T) {
 		t.Error(e)
 	}
 	beanstalkd.Quit()
+}
+
+func ExampleBeanstalkd() {
+	queue, e := Dial("0.0.0.0:11300")
+	if e != nil {
+		log.Fatal(e)
+	}
+	priority := 0 // Job priority, smaller runs first
+	delay := 0    // Wait in seconds before making available to reserve
+	ttr := 60     // Time to run in seconds since reserved by consummer before re-released in queue
+	id, e := queue.Put(priority, delay, ttr, []byte("job body"))
+	if e != nil {
+		log.Fatal(e)
+	}
+	log.Printf("JOB ID: %d\n", id)
+	job, e := queue.Reserve()
+	if e != nil {
+		log.Fatal(e)
+	}
+	log.Printf("JOB: %d %s\n", job.Id, job.Body)
+	e = queue.Delete(job.Id)
+	if e != nil {
+		log.Fatal(e)
+	}
 }

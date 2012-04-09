@@ -18,7 +18,7 @@ After installing, use godoc to view documentation. For example:
 godoc -http=:6060
 ```
 
-And open http://0.0.0.0:6060/pkg/lentil/ in a browser.
+And open http://0.0.0.0:6060/pkg/github.com/nutrun/lentil/ in a browser.
 
 ## USAGE
 
