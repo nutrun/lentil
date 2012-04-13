@@ -28,7 +28,7 @@ And open http://0.0.0.0:6060/pkg/github.com/nutrun/lentil/ in a browser.
 package main
 
 import(
-	"lentil"
+	"github.com/nutrun/lentil"
 	"log"
 )
 
@@ -51,7 +51,7 @@ func main() {
 package main
 
 import(
-	"lentil"
+	"github.com/nutrun/lentil"
 	"log"
 )
 
@@ -77,5 +77,5 @@ func main() {
 * beanstalkd: http://kr.github.com/beanstalkd/
 * beanstalkd source: https://github.com/kr/beanstalkd/
 * beanstalkd protocol: https://github.com/kr/beanstalkd/blob/master/doc/protocol.txt
-* kr's beanstalk.go: https://github.com/kr/beanstalk.go
+* kr's go beanstalk client: https://github.com/kr/beanstalk
 
