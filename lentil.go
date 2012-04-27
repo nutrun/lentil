@@ -15,6 +15,9 @@ type Beanstalkd struct {
 	reader *bufio.Reader
 }
 
+// Size of the reader buffer. Increase to handle large message bodies
+var ReaderSize = 4096 // bufio.defaultSize
+
 type Job struct {
 	Id   uint64
 	Body []byte
@@ -73,7 +76,7 @@ func Dial(addr string) (*Beanstalkd, error) {
 	if e != nil {
 		return nil, e
 	}
-	this.reader = bufio.NewReader(this.conn)
+	this.reader = bufio.NewReaderSize(this.conn, ReaderSize)
 	return this, nil
 }
 
