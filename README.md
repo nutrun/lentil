@@ -79,3 +79,6 @@ func main() {
 * beanstalkd protocol: https://github.com/kr/beanstalkd/blob/master/doc/protocol.txt
 * kr's go beanstalk client: https://github.com/kr/beanstalk
 
+## LICENCE
+See [LICENSE](https://github.com/nutrun/lentil/blob/master/LICENSE),
+it's the same as [beanstalkd's license](https://github.com/kr/beanstalkd/blob/master/LICENSE)
