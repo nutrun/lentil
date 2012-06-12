@@ -175,7 +175,11 @@ func (this *Beanstalkd) handleReserveReply() (*Job, error) {
 	if len(body) != bodylen {
 		return nil, errors.New(fmt.Sprintf("Job body length missmatch %d/%d", len(body), bodylen))
 	}
-	return &Job{Id: id, Body: body}, nil
+	job := new(Job)
+	job.Id = id
+	job.Body = make([]byte, len(body))
+	copy(job.Body, body)
+	return job, nil
 }
 
 // Delete  removes a job from the server entirely.
@@ -278,7 +282,11 @@ func (this *Beanstalkd) handlePeekReply() (*Job, error) {
 	if len(body) != bodylen {
 		return nil, errors.New(fmt.Sprintf("Job body length missmatch %d/%d", len(body), bodylen))
 	}
-	return &Job{Id: id, Body: body}, nil
+	job := new(Job)
+	job.Id = id
+	job.Body = make([]byte, len(body))
+	copy(job.Body, body)
+	return job, nil
 }
 
 // Kick moves a job to the "ready" queue.
