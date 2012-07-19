@@ -11,7 +11,6 @@ import (
 var addr = flag.String("addr", "0.0.0.0:11300", "Beanstalkd address (host:port)")
 var listTubes = flag.Bool("list-tubes", false, "List tubes")
 var pauseTube = flag.String("pause-tube", "", "Pause tube, requires delay")
-var delay = flag.Int("delay", 0, "Pause tube delay")
 var statsTube = flag.String("stats-tube", "", "Get stats for tube")
 var stats = flag.Bool("stats", false, "Get queue stats")
 var drain = flag.String("drain", "", "Empty tube by deleting all its jobs")
@@ -22,6 +21,9 @@ var peekBuried = flag.Bool("peek-buried", false, "Peek first buried job")
 var peekDelayed = flag.Bool("peek-delayed", false, "Peek first delayed job")
 var kick = flag.Int("kick", 0, "Move n buried or delayed jobs to ready queue")
 var del = flag.Int("delete", 0, "Delete job by id")
+var delay = flag.Int("delay", 0, "Pause tube or job delay")
+var pri = flag.Int("pri", 0, "Job priority")
+var ttr = flag.Int("ttr", 360, "Job time to run")
 
 func main() {
 	flag.Parse()
@@ -85,7 +87,7 @@ func main() {
 	if *put != "" {
 		e = q.Use(*tube)
 		err(e)
-		id, e := q.Put(0, 0, 60*60, []byte(*put))
+		id, e := q.Put(*pri, *delay, *ttr, []byte(*put))
 		err(e)
 		fmt.Printf("id:%d\n", id)
 		os.Exit(0)

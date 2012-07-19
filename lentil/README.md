@@ -23,56 +23,59 @@ default
 # Put a job in default tube
 $ lentil -put="hello world"
 id:1
-# Put a job in a non default tube
-$ lentil -put="hello wurld" -tube=foo
+# Any of pri, ttr and delay can be specified when putting a job
+$ lentil -put="hello fine tuned world" -pri=7 -ttr=30 -delay=10
 id:2
-# More tubes to list
+# Puts a job in a tube
+$ lentil -put="hello wurld" -tube=foo
+id:3
+# More tubes to list now
 $ lentil -list-tubes
 default
 foo
-# Peek (print id and body) a job by id
-$ lentil -peek=2
-2:hello wurld
-# Delete a job by its id
-$ lentil -delete=2
-# Emtpy tubes get deleted by beanstalkd
+# Peek a job by id
+$ lentil -peek=3
+3:hello wurld
+# Delete a job by id
+$ lentil -delete=3
+# Beanstalkd deletes empty queues
 $ lentil -list-tubes
 default
 # Put a bunch of jobs
 $ for i in {1..5}; do lentil -put="msg $i"; done
-id:3
 id:4
 id:5
 id:6
 id:7
-# Drain all jobs from a tube
+id:8
+# Drain all the jobs from a tube
 $ lentil -drain=default
 1:hello world
-3:msg 1
-4:msg 2
-5:msg 3
-6:msg 4
-7:msg 5
-# Get stats for a tube. There's a lot, filter out what's not pause related here
+4:msg 1
+5:msg 2
+6:msg 3
+7:msg 4
+8:msg 5
+2:hello fine tuned world
+# Get tube stats. There's a lot, only looking at pause related ones here
 $ lentil -stats-tube=default | grep pause
-cmd-pause-tube:0
 pause-time-left:0
 pause:0
+cmd-pause-tube:0
 # Pause a tube for 30 seconds
 $ lentil -pause-tube=default -delay=30
 Paused default for 30 seconds
-# Get pause stats for default tube again
+# Look at tube pause stats again
 $ lentil -stats-tube=default | grep pause
 cmd-pause-tube:1
-pause-time-left:26
+pause-time-left:22
 pause:30
-# Get queue stats, there's a lot, only looking at first three here
+# Get queue stats. There's a lot, only listing first three here
 $ lentil -stats | head -n3
-cmd-list-tubes:3
-binlog-current-index:0
-cmd-stats-tube:1
+cmd-ignore:0
+total-connections:18
+cmd-list-tube-used:0
 ```
-
 
 ## LINKS
 * beanstalkd: http://kr.github.com/beanstalkd/
