@@ -1,6 +1,6 @@
 # lentil - beanstalkd command line client
 
-_This is the lentil command line client's README. For the the golang library see [github.com/nutrun/lentil/blob/master/README.md](https://github.com/nutrun/lentil/blob/master/README.md)_
+_This is the lentil command line client. For the the golang library see [github.com/nutrun/lentil/blob/master/README.md](https://github.com/nutrun/lentil/blob/master/README.md)_
 
 ## INSTALL
 
