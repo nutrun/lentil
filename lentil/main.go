@@ -44,7 +44,6 @@ func main() {
 		}
 		e := q.PauseTube(*pauseTube, *delay)
 		err(e)
-		log.Printf("Paused %s for %d seconds\n", *pauseTube, *delay)
 		os.Exit(0)
 	}
 	if *statsTube != "" {

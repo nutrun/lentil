@@ -66,7 +66,6 @@ pause:0
 cmd-pause-tube:0
 # Pause a tube for 30 seconds
 $ lentil -pause-tube=default -delay=30
-Paused default for 30 seconds
 # Look at tube pause stats again
 $ lentil -stats-tube=default | grep pause
 cmd-pause-tube:1
