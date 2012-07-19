@@ -18,6 +18,9 @@ var drain = flag.String("drain", "", "Empty tube by deleting all its jobs")
 var tube = flag.String("tube", "default", "Use tube")
 var put = flag.String("put", "", "Put job body")
 var peek = flag.Int("peek", 0, "Peek job by id")
+var peekBuried = flag.Bool("peek-buried", false, "Peek first buried job")
+var peekDelayed = flag.Bool("peek-delayed", false, "Peek first delayed job")
+var kick = flag.Int("kick", 0, "Move n buried or delayed jobs to ready queue")
 var del = flag.Int("delete", 0, "Delete job by id")
 
 func main() {
@@ -93,11 +96,36 @@ func main() {
 		fmt.Printf("%d:%s\n", job.Id, job.Body)
 		os.Exit(0)
 	}
+	if *peekBuried {
+		e := q.Use(*tube)
+		err(e)
+		job, e := q.PeekBuried()
+		err(e)
+		fmt.Printf("%d:%s\n", job.Id, job.Body)
+		os.Exit(0)
+	}
+	if *peekDelayed {
+		e := q.Use(*tube)
+		err(e)
+		job, e := q.PeekDelayed()
+		err(e)
+		fmt.Printf("%d:%s\n", job.Id, job.Body)
+		os.Exit(0)
+	}
+	if *kick != 0 {
+		e := q.Use(*tube)
+		err(e)
+		kicked, e := q.Kick(*kick)
+		err(e)
+		fmt.Printf("%d\n", kicked)
+		os.Exit(0)
+	}
 	if *del != 0 {
 		e := q.Delete(uint64(*del))
 		err(e)
 		os.Exit(0)
 	}
+
 	flag.Usage()
 	os.Exit(1)
 }
