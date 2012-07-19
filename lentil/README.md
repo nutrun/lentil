@@ -26,7 +26,7 @@ id:1
 # Any of pri, ttr and delay can be specified when putting a job
 $ lentil -put="hello fine tuned world" -pri=7 -ttr=30 -delay=10
 id:2
-# Puts a job in a tube
+# Put a job in a tube
 $ lentil -put="hello wurld" -tube=foo
 id:3
 # More tubes to list now
