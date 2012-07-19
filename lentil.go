@@ -257,7 +257,7 @@ func (this *Beanstalkd) PeekDelayed() (*Job, error) {
 	return this.handlePeekReply()
 }
 
-// PeekDelayed lets the client inspect the first "buried" job.
+// PeekBuried lets the client inspect the first "buried" job.
 func (this *Beanstalkd) PeekBuried() (*Job, error) {
 	fmt.Fprintf(this.conn, "peek-buried\r\n")
 	return this.handlePeekReply()
