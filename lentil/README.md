@@ -4,6 +4,8 @@ _This is the lentil command line client's README. For the the golang library see
 
 ## INSTALL
 
+Needs [golang](http://golang.org/)
+
 ```bash
 go get github.com/nutrun/lentil/lentil
 ```
