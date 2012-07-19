@@ -75,6 +75,8 @@ $ lentil -stats | head -n3
 cmd-ignore:0
 total-connections:18
 cmd-list-tube-used:0
+# Chain pipe commands shell style
+$ lentil -list-tubes | xargs -n1 lentil -stats-tube
 ```
 
 ## LINKS
