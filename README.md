@@ -1,7 +1,8 @@
 # lentil - golang beanstalkd client library
 
-## INSTALL
+_This is the lentil library's README. For the the command line client see [github.com/nutrun/lentil/blob/master/lentil/README.md](https://github.com/nutrun/lentil/blob/master/lentil/README.md)_
 
+## INSTALL
 ```bash
 go get github.com/nutrun/lentil
 ```
@@ -23,7 +24,6 @@ And open http://0.0.0.0:6060/pkg/github.com/nutrun/lentil/ in a browser.
 ## USAGE
 
 ### Example producer:
-
 ```go
 package main
 
@@ -46,7 +46,6 @@ func main() {
 ```
 
 ### Example consumer:
-
 ```go
 package main
 
@@ -73,7 +72,6 @@ func main() {
 ```
 
 ## LINKS
-
 * beanstalkd: http://kr.github.com/beanstalkd/
 * beanstalkd source: https://github.com/kr/beanstalkd/
 * beanstalkd protocol: https://github.com/kr/beanstalkd/blob/master/doc/protocol.txt
