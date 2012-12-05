@@ -31,8 +31,8 @@ func (this *Beanstalkd) send(format string, args ...interface{}) error {
 		fmt.Fprintf(Debug, "(%v) -> ", this.conn)
 		fmt.Fprintf(Debug, format, args...)
 	}
-	fmt.Fprintf(this.conn, format, args...)
-	return nil
+	_, err := fmt.Fprintf(this.conn, format, args...)
+	return err
 }
 
 func (this *Beanstalkd) recvline() (string, error) {
@@ -82,7 +82,10 @@ func Dial(addr string) (*Beanstalkd, error) {
 
 // Watch adds the named tube to a consumer's watch list for the current connection.
 func (this *Beanstalkd) Watch(tube string) (int, error) {
-	this.send("watch %s\r\n", tube)
+	e := this.send("watch %s\r\n", tube)
+	if e != nil {
+		return 0, e
+	}
 	reply, e := this.recvline()
 	if e != nil {
 		return 0, e
@@ -97,7 +100,10 @@ func (this *Beanstalkd) Watch(tube string) (int, error) {
 
 // Ignore removes the named tube from a consumer's watch list for the current connection
 func (this *Beanstalkd) Ignore(tube string) (int, error) {
-	this.send("ignore %s\r\n", tube)
+	e := this.send("ignore %s\r\n", tube)
+	if e != nil {
+		return 0, e
+	}
 	reply, e := this.recvline()
 	if e != nil {
 		return 0, e
@@ -114,7 +120,11 @@ func (this *Beanstalkd) Ignore(tube string) (int, error) {
 // Subsequent Put commands will put jobs into the tube specified by this command.
 // If no use command has been issued, jobs will be put into the tube named "default".
 func (this *Beanstalkd) Use(tube string) error {
-	this.send("use %s\r\n", tube)
+	e := this.send("use %s\r\n", tube)
+	if e != nil {
+		return e
+	}
+	
 	reply, e := this.recvline()
 	if e != nil {
 		return e
@@ -129,7 +139,10 @@ func (this *Beanstalkd) Use(tube string) error {
 
 // Put inserts a job into the queue.
 func (this *Beanstalkd) Put(priority, delay, ttr int, data []byte) (uint64, error) {
-	this.send("put %d %d %d %d\r\n%s\r\n", priority, delay, ttr, len(data), data)
+	e := this.send("put %d %d %d %d\r\n%s\r\n", priority, delay, ttr, len(data), data)
+	if e != nil {
+		return 0, e
+	}
 	reply, e := this.recvline()
 	if e != nil {
 		return 0, e
@@ -144,7 +157,10 @@ func (this *Beanstalkd) Put(priority, delay, ttr int, data []byte) (uint64, erro
 
 // Reserve is for processes that want to consume jobs from the queue.
 func (this *Beanstalkd) Reserve() (*Job, error) {
-	this.send("reserve\r\n")
+	e :=  this.send("reserve\r\n")
+	if e != nil {
+		return nil, e
+	}
 	return this.handleReserveReply()
 }
 
@@ -152,7 +168,10 @@ func (this *Beanstalkd) Reserve() (*Job, error) {
 // A timeout value of 0 will cause the server to immediately return either a response or TIMED_OUT.
 // A positive timeout value will limit the amount of time the client will block on the reserve request.
 func (this *Beanstalkd) ReserveWithTimeout(seconds int) (*Job, error) {
-	this.send("reserve-with-timeout %d\r\n", seconds)
+	e := this.send("reserve-with-timeout %d\r\n", seconds)
+	if e != nil {
+		return nil, e
+	}
 	return this.handleReserveReply()
 }
 
@@ -185,7 +204,10 @@ func (this *Beanstalkd) handleReserveReply() (*Job, error) {
 // Delete  removes a job from the server entirely.
 // It is normally used by the client when the job has successfully run to completion.
 func (this *Beanstalkd) Delete(id uint64) error {
-	this.send("delete %d\r\n", id)
+	e := this.send("delete %d\r\n", id)
+	if e != nil {
+		return e
+	}
 	reply, e := this.recvline()
 	if e != nil {
 		return e
@@ -199,7 +221,10 @@ func (this *Beanstalkd) Delete(id uint64) error {
 
 // Release puts a reserved job back into the ready queue.
 func (this *Beanstalkd) Release(id uint64, pri, delay int) error {
-	this.send("release %d %d %d\r\n", id, pri, delay)
+	e := this.send("release %d %d %d\r\n", id, pri, delay)
+	if e != nil {
+		return  e
+	}
 	reply, e := this.recvline()
 	if e != nil {
 		return e
@@ -213,7 +238,10 @@ func (this *Beanstalkd) Release(id uint64, pri, delay int) error {
 
 // Bury puts a job into the "buried" state.
 func (this *Beanstalkd) Bury(id uint64, pri int) error {
-	this.send("bury %d %d\r\n", id, pri)
+	e := this.send("bury %d %d\r\n", id, pri)
+	if e != nil {
+		return e
+	}
 	reply, e := this.recvline()
 	if e != nil {
 		return e
@@ -227,7 +255,10 @@ func (this *Beanstalkd) Bury(id uint64, pri int) error {
 
 // Touch allows a worker to request more time to work on a job.
 func (this *Beanstalkd) Touch(id uint64) error {
-	this.send("touch %d\r\n", id)
+	e := this.send("touch %d\r\n", id)
+	if e != nil {
+		return  e
+	}
 	reply, e := this.recvline()
 	if e != nil {
 		return e
@@ -241,7 +272,10 @@ func (this *Beanstalkd) Touch(id uint64) error {
 
 // Peek lets the client inspect a job in the system.
 func (this *Beanstalkd) Peek(id uint64) (*Job, error) {
-	this.send("peek %d\r\n", id)
+	e := this.send("peek %d\r\n", id)
+	if e != nil {
+		return nil, e
+	}
 	return this.handlePeekReply()
 }
 
@@ -257,7 +291,7 @@ func (this *Beanstalkd) PeekDelayed() (*Job, error) {
 	return this.handlePeekReply()
 }
 
-// PeekDelayed lets the client inspect the first "buried" job.
+// PeekBuried lets the client inspect the first "buried" job.
 func (this *Beanstalkd) PeekBuried() (*Job, error) {
 	fmt.Fprintf(this.conn, "peek-buried\r\n")
 	return this.handlePeekReply()
@@ -291,7 +325,10 @@ func (this *Beanstalkd) handlePeekReply() (*Job, error) {
 
 // Kick moves a job to the "ready" queue.
 func (this *Beanstalkd) Kick(bound int) (int, error) {
-	this.send("kick %d\r\n", bound)
+	e := this.send("kick %d\r\n", bound)
+	if e != nil {
+		return 0, e
+	}
 	reply, e := this.recvline()
 	if e != nil {
 		return -1, e
@@ -306,19 +343,28 @@ func (this *Beanstalkd) Kick(bound int) (int, error) {
 
 // StatsJob returns statistical information about a job.
 func (this *Beanstalkd) StatsJob(id uint64) (map[string]string, error) {
-	this.send("stats-job %d\r\n", id)
+	e := this.send("stats-job %d\r\n", id)
+	if e != nil {
+		return nil, e
+	}
 	return this.handleMapResponse()
 }
 
 // StatsTube returns statistical information about a tube.
 func (this *Beanstalkd) StatsTube(tube string) (map[string]string, error) {
-	this.send("stats-tube %s\r\n", tube)
+	e := this.send("stats-tube %s\r\n", tube)
+	if e != nil {
+		return nil, e
+	}
 	return this.handleMapResponse()
 }
 
 // Stats returns statistical information about the queue.
 func (this *Beanstalkd) Stats() (map[string]string, error) {
-	this.send("stats\r\n")
+	e := this.send("stats\r\n")
+	if e != nil {
+		return nil, e
+	}
 	return this.handleMapResponse()
 }
 
@@ -349,7 +395,10 @@ func (this *Beanstalkd) handleMapResponse() (map[string]string, error) {
 
 // ListTubes returns a list of all the existing tubes.
 func (this *Beanstalkd) ListTubes() ([]string, error) {
-	this.send("list-tubes\r\n")
+	e := this.send("list-tubes\r\n")
+	if e != nil {
+		return nil, e
+	}
 	return this.handleListResponse()
 }
 
@@ -380,7 +429,10 @@ func (this *Beanstalkd) handleListResponse() ([]string, error) {
 
 // ListTubeUsed returns the tube currently used by a producer.
 func (this *Beanstalkd) ListTubeUsed() (string, error) {
-	this.send("list-tube-used\r\n")
+	e := this.send("list-tube-used\r\n")
+	if e != nil {
+		return "", e
+	}
 	var tube string
 	reply, e := this.recvline()
 	if e != nil {
@@ -395,19 +447,28 @@ func (this *Beanstalkd) ListTubeUsed() (string, error) {
 
 // ListTubesWatched returns the list of tubes watched by a consumer.
 func (this *Beanstalkd) ListTubesWatched() ([]string, error) {
-	this.send("list-tubes-watched\r\n")
+	e := this.send("list-tubes-watched\r\n")
+	if e != nil {
+		return nil, e
+	}
 	return this.handleListResponse()
 }
 
 // Quit closes the connection to the queue.
 func (this *Beanstalkd) Quit() error {
-	this.send("quit\r\n")
+	e := this.send("quit\r\n")
+	if e != nil {
+		return e
+	}
 	return this.conn.Close()
 }
 
 // PauseTube delays any new job being reserved for a given time.
 func (this *Beanstalkd) PauseTube(tube string, delay int) error {
-	this.send("pause-tube %s %d\r\n", tube, delay)
+	e := this.send("pause-tube %s %d\r\n", tube, delay)
+	if e != nil {
+		return e
+	}
 	reply, e := this.recvline()
 	if e != nil {
 		return e
