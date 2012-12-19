@@ -124,7 +124,7 @@ func (this *Beanstalkd) Use(tube string) error {
 	if e != nil {
 		return e
 	}
-	
+
 	reply, e := this.recvline()
 	if e != nil {
 		return e
@@ -157,7 +157,7 @@ func (this *Beanstalkd) Put(priority, delay, ttr int, data []byte) (uint64, erro
 
 // Reserve is for processes that want to consume jobs from the queue.
 func (this *Beanstalkd) Reserve() (*Job, error) {
-	e :=  this.send("reserve\r\n")
+	e := this.send("reserve\r\n")
 	if e != nil {
 		return nil, e
 	}
@@ -223,7 +223,7 @@ func (this *Beanstalkd) Delete(id uint64) error {
 func (this *Beanstalkd) Release(id uint64, pri, delay int) error {
 	e := this.send("release %d %d %d\r\n", id, pri, delay)
 	if e != nil {
-		return  e
+		return e
 	}
 	reply, e := this.recvline()
 	if e != nil {
@@ -257,7 +257,7 @@ func (this *Beanstalkd) Bury(id uint64, pri int) error {
 func (this *Beanstalkd) Touch(id uint64) error {
 	e := this.send("touch %d\r\n", id)
 	if e != nil {
-		return  e
+		return e
 	}
 	reply, e := this.recvline()
 	if e != nil {
