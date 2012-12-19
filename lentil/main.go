@@ -26,6 +26,7 @@ var pri = flag.Int("pri", 0, "Job priority")
 var ttr = flag.Int("ttr", 360, "Job time to run")
 
 func main() {
+	lentil.ReaderSize = 65536
 	flag.Parse()
 	log.SetFlags(0)
 	q, e := lentil.Dial(*addr)
