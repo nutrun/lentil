@@ -128,22 +128,24 @@ func TestBeanstalk(t *testing.T) {
 	if e != nil {
 		t.Error(e)
 	}
-	if len(stats) != 13 {
+	// stats: age, delay, time-left, reserves, kicks, file, ttr, timeouts, releases, buries, id, tube, state, pri
+	if len(stats) != 14 {
 		t.Error("bad job stats")
 	}
 	stats, e = beanstalkd.StatsTube("default")
 	if e != nil {
 		t.Error(e)
 	}
-	if len(stats) != 13 {
+	// stats: name,	current-jobs-ready, current-jobs-buried, current-watching, current-jobs-delayed, total-jobs, pause, current-jobs-urgent, current-waiting, cmd-pause-tube, pause-time-left, current-jobs-reserved, current-using, cmd-delete
+	if len(stats) != 14 {
 		t.Error("bad tube stats")
-
 	}
 	stats, e = beanstalkd.Stats()
 	if e != nil {
 		t.Error()
 	}
-	if len(stats) != 44 {
+	// stats: cmd-list-tubes, current-tubes, current-waiting, cmd-peek, cmd-peek-ready, cmd-reserve-with-timeout, cmd-use, cmd-bury, binlog-records-written, cmd-kick, cmd-stats, cmd-pause-tube, version, total-jobs, hostname, cmd-peek-buried, cmd-reserve, cmd-delete, cmd-release, cmd-ignore, current-workers, total-connections, rusage-stime, current-jobs-reserved, cmd-put, cmd-watch, current-connections, current-producers, id, current-jobs-ready, current-jobs-buried, uptime, binlog-oldest-index, binlog-max-size, cmd-stats-tube, cmd-list-tubes-watched, max-job-size, binlog-records-migrated, rusage-utime, current-jobs-urgent, cmd-touch, cmd-stats-job, cmd-list-tube-used, pid, current-jobs-delayed, cmd-peek-delayed, job-timeouts, binlog-current-index
+	if len(stats) != 48 {
 		t.Error("bad stats")
 	}
 	tubes, e := beanstalkd.ListTubes()
